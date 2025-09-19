@@ -1,3 +1,6 @@
+//src.pages.student.StudentProfile.jsx
+
+
 "use client"
 
 import { useState, useEffect } from "react"

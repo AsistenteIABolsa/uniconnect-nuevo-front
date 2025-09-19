@@ -1,3 +1,4 @@
+//src.pages.ResgisterPage.jsx
 "use client"
 
 import { useState } from "react"
