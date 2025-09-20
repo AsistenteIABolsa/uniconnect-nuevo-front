@@ -58,7 +58,7 @@ const EmployerDashboard = () => {
     }
   }
 
-  //Abrir modal con aplicaciones
+  /*Abrir modal con aplicaciones
 const handleViewApplications = async (jobId) => {
   try {
     const response = await jobService.getJobApplications(jobId)
@@ -69,10 +69,10 @@ const handleViewApplications = async (jobId) => {
   } finally {
     setIsModalOpen(true) // <- asegurar que el modal se abra
   }
-}
+}*/
     
 
-  /* Abrir modal con aplicaciones (simulación sin API)
+  // Abrir modal con aplicaciones (simulación sin API)
   const handleViewApplications = async (jobId) => {
     try {
       // 🔹 Datos de prueba mientras no hay backend
@@ -101,7 +101,7 @@ const handleViewApplications = async (jobId) => {
     } catch (error) {
       console.error("Error mostrando aplicaciones:", error)
     }
-  }*/
+  }
 
 
   const getStatusColor = (status) => {
