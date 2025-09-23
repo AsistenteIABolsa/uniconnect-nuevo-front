@@ -1,6 +1,4 @@
-//src.pages.student.StudentProfile.jsx
-
-
+// src/pages/student/StudentProfile.jsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -17,6 +15,8 @@ import {
   ArrowLeft,
   AlertCircle,
   CheckCircle,
+  Trash2,
+  Plus
 } from "lucide-react"
 
 const StudentProfile = () => {
@@ -31,10 +31,29 @@ const StudentProfile = () => {
     graduationYear: "",
     about: "",
     skills: [],
+    education: [],
+    workExperience: [],
+    projects: [],
+    languages: [],
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
+  const [isEditing, setIsEditing] = useState(false)
 
+  // Helper: convierte un posible string "Ingles-C3" a { name, level }
+  const parseLanguageString = (s) => {
+    if (!s) return { name: "", level: "" }
+    if (typeof s !== "string") return s
+    // dividir por "-" o ":" o "/" si hay
+    const sep = s.includes("-") ? "-" : s.includes(":") ? ":" : s.includes("/") ? "/" : null
+    if (sep) {
+      const parts = s.split(sep)
+      return { name: parts[0].trim(), level: (parts[1] || "").trim() }
+    }
+    return { name: s.trim(), level: "" }
+  }
+
+  // Normalizar los datos que vienen del user al abrir/actualizar
   useEffect(() => {
     if (user) {
       setFormData({
@@ -42,32 +61,78 @@ const StudentProfile = () => {
         lastName: user.lastName || "",
         email: user.email || "",
         phone: user.phone || "",
-        studentId: user.profile?.studentId || "",
-        major: user.profile?.major || "",
-        graduationYear: user.profile?.graduationYear || "",
-        about: user.profile?.about || "",
-        skills: user.profile?.skills || [],
+        studentId: user.studentId || "",
+        major: user.major || "",
+        graduationYear: user.graduationYear || "",
+        about: user.about || "",
+        skills: Array.isArray(user.skills) ? user.skills : (user.skills ? String(user.skills).split(",").map(s=>s.trim()).filter(Boolean) : []),
+        education: Array.isArray(user.education) ? user.education : [],
+        workExperience: Array.isArray(user.workExperience) ? user.workExperience : [],
+        projects: Array.isArray(user.projects) ? user.projects : [],
+        // languages: asegurar que sean objetos {name, level}
+        languages: Array.isArray(user.languages) ? user.languages.map(l => (typeof l === "string" ? parseLanguageString(l) : (l || { name: "", level: "" }))) : [],
       })
     }
   }, [user])
 
+  // Cambios simples
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  // skills: texto separado por comas -> array de strings
   const handleSkillsChange = (e) => {
     const skills = e.target.value
       .split(",")
       .map((skill) => skill.trim())
       .filter((skill) => skill)
-    setFormData((prev) => ({
-      ...prev,
-      skills,
-    }))
+    setFormData((prev) => ({ ...prev, skills }))
+  }
+
+  // Cambios en arrays de objetos
+  const handleArrayChange = (field, index, subfield, value) => {
+    const updated = [...(formData[field] || [])]
+    updated[index] = { ...updated[index], [subfield]: value }
+    setFormData((prev) => ({ ...prev, [field]: updated }))
+  }
+
+  const addArrayItem = (field, itemTemplate) => {
+    setFormData((prev) => ({ ...prev, [field]: [...(prev[field] || []), itemTemplate] }))
+  }
+
+  const removeArrayItem = (field, index) => {
+    const updated = [...(formData[field] || [])]
+    updated.splice(index, 1)
+    setFormData(prev => ({ ...prev, [field]: updated }))
+  }
+
+  // Toggle editar / cancelar (si cancela, revertir a user actual)
+  const toggleEdit = () => {
+    if (isEditing) {
+      // cancelar: revertir datos a user
+      if (user) {
+        setFormData({
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          studentId: user.studentId || "",
+          major: user.major || "",
+          graduationYear: user.graduationYear || "",
+          about: user.about || "",
+          skills: Array.isArray(user.skills) ? user.skills : (user.skills ? String(user.skills).split(",").map(s=>s.trim()).filter(Boolean) : []),
+          education: Array.isArray(user.education) ? user.education : [],
+          workExperience: Array.isArray(user.workExperience) ? user.workExperience : [],
+          projects: Array.isArray(user.projects) ? user.projects : [],
+          languages: Array.isArray(user.languages) ? user.languages.map(l => (typeof l === "string" ? parseLanguageString(l) : (l || { name: "", level: "" }))) : [],
+        })
+      }
+      setMessage({ type: "", text: "" })
+      setIsEditing(false)
+    } else {
+      setIsEditing(true)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -75,15 +140,31 @@ const StudentProfile = () => {
     setLoading(true)
     setMessage({ type: "", text: "" })
 
-    const result = await updateProfile(formData)
-
-    if (result.success) {
-      setMessage({ type: "success", text: "Perfil actualizado exitosamente" })
-    } else {
-      setMessage({ type: "error", text: result.message })
+    // Asegurarse de enviar languages como array de objetos {name, level}
+    const payload = {
+      ...formData,
+      languages: (formData.languages || []).map(l => {
+        // si existe como string por alguna razón, normalizar
+        if (typeof l === "string") return parseLanguageString(l)
+        return { name: l.name || "", level: l.level || "" }
+      }),
+      skills: Array.isArray(formData.skills) ? formData.skills : (formData.skills ? String(formData.skills).split(",").map(s=>s.trim()).filter(Boolean) : []),
     }
 
-    setLoading(false)
+    try {
+      const result = await updateProfile(payload)
+      // suponiendo que updateProfile retorna { success: boolean, message?: string }
+      if (result?.success) {
+        setMessage({ type: "success", text: "Perfil actualizado exitosamente" })
+        setIsEditing(false)
+      } else {
+        setMessage({ type: "error", text: result?.message || "Error actualizando perfil" })
+      }
+    } catch (err) {
+      setMessage({ type: "error", text: err.message || "Error actualizando perfil" })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -99,43 +180,115 @@ const StudentProfile = () => {
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">Mi Perfil</h1>
             </div>
+
+            <div>
+              <button
+                onClick={toggleEdit}
+                className="px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                {isEditing ? "Cancelar" : "Editar Perfil"}
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow-md rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Información Personal</h2>
-            <p className="text-sm text-gray-600">
-              Actualiza tu información para que los empleadores puedan conocerte mejor.
-            </p>
-          </div>
+        {!isEditing ? (
+          // ===== VISTA ESTÁTICA =====
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center space-x-4">
+                <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold">
+                  {formData.firstName?.[0] || ""}{formData.lastName?.[0] || ""}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">{formData.firstName} {formData.lastName}</h2>
+                  <p className="text-gray-600">{formData.major}</p>
+                  <p className="text-gray-500">{formData.about}</p>
+                </div>
+              </div>
 
-          <form onSubmit={handleSubmit} className="p-6">
+              <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                <div><strong>Correo:</strong> {formData.email}</div>
+                <div><strong>Teléfono:</strong> {formData.phone}</div>
+                <div><strong>ID Estudiante:</strong> {formData.studentId}</div>
+                <div><strong>Año Graduación:</strong> {formData.graduationYear}</div>
+              </div>
+            </div>
+
+            {formData.skills?.length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-2">Habilidades</h3>
+                <div className="flex flex-wrap gap-2">
+                  {formData.skills.map((s, i) => (
+                    <span key={i} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {formData.languages?.length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-2">Idiomas</h3>
+                {formData.languages.map((l, i) => (
+                  <p key={i}>{l.name} — {l.level}</p>
+                ))}
+              </div>
+            )}
+
+            {formData.education?.length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-2">Educación</h3>
+                {formData.education.map((e, i) => (
+                  <div key={i} className="mb-2">
+                    <strong>{e.institution}</strong> — {e.degree} <span className="text-sm text-gray-500">{e.period}</span>
+                    <p className="text-sm">{e.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {formData.workExperience?.length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-2">Experiencia</h3>
+                {formData.workExperience.map((w, i) => (
+                  <div key={i} className="mb-2">
+                    <strong>{w.position}</strong> — {w.company} <span className="text-sm text-gray-500">{w.period}</span>
+                    <p className="text-sm">{w.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {formData.projects?.length > 0 && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-2">Proyectos</h3>
+                {formData.projects.map((p, i) => (
+                  <div key={i} className="mb-2">
+                    <strong>{p.name}</strong> {p.link && (<a href={p.link} className="text-blue-500 ml-2">{p.link}</a>)}
+                    <p className="text-sm">{p.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          // ===== FORMULARIO COMPLETO =====
+          <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-6">
             {message.text && (
-              <div
-                className={`mb-6 p-4 rounded-md ${
-                  message.type === "success" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
-                }`}
-              >
+              <div className={`mb-6 p-4 rounded-md ${message.type === "success" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
                 <div className="flex">
-                  {message.type === "success" ? (
-                    <CheckCircle className="h-5 w-5 text-green-400" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-red-400" />
-                  )}
+                  {message.type === "success" ? <CheckCircle className="h-5 w-5 text-green-400" /> : <AlertCircle className="h-5 w-5 text-red-400" />}
                   <div className="ml-3">
-                    <p className={`text-sm ${message.type === "success" ? "text-green-800" : "text-red-800"}`}>
-                      {message.text}
-                    </p>
+                    <p className={`text-sm ${message.type === "success" ? "text-green-800" : "text-red-800"}`}>{message.text}</p>
                   </div>
                 </div>
               </div>
             )}
 
+            {/* Datos básicos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Información básica */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
                 <div className="relative">
@@ -146,7 +299,7 @@ const StudentProfile = () => {
                     required
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
@@ -161,7 +314,7 @@ const StudentProfile = () => {
                     required
                     value={formData.lastName}
                     onChange={handleChange}
-                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
@@ -178,7 +331,7 @@ const StudentProfile = () => {
                     className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">El correo electrónico no se puede modificar</p>
+                <p className="text-xs text-gray-500 mt-1">El correo no se puede modificar</p>
               </div>
 
               <div>
@@ -190,12 +343,11 @@ const StudentProfile = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
 
-              {/* Información académica */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Matrícula</label>
                 <div className="relative">
@@ -206,7 +358,7 @@ const StudentProfile = () => {
                     required
                     value={formData.studentId}
                     onChange={handleChange}
-                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
@@ -221,13 +373,13 @@ const StudentProfile = () => {
                     required
                     value={formData.graduationYear}
                     onChange={handleChange}
-                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="mt-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Carrera</label>
               <input
                 type="text"
@@ -235,24 +387,24 @@ const StudentProfile = () => {
                 required
                 value={formData.major}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Ingeniería en Sistemas"
               />
             </div>
 
-            <div className="mt-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Habilidades (separadas por comas)</label>
               <input
                 type="text"
                 name="skills"
-                value={formData.skills.join(", ")}
+                value={(formData.skills || []).join(", ")}
                 onChange={handleSkillsChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="JavaScript, React, Node.js, Python"
               />
             </div>
 
-            <div className="mt-6">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Acerca de ti</label>
               <div className="relative">
                 <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -261,37 +413,110 @@ const StudentProfile = () => {
                   rows="4"
                   value={formData.about}
                   onChange={handleChange}
-                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Cuéntanos sobre ti, tus intereses y objetivos profesionales..."
+                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="Cuéntanos sobre ti..."
                 />
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+            {/* Idiomas */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Idiomas</label>
+              {(formData.languages || []).map((lang, i) => (
+                <div key={i} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Idioma"
+                    value={lang.name || ""}
+                    onChange={(e) => handleArrayChange("languages", i, "name", e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Nivel (ej. B2, C1, C3)"
+                    value={lang.level || ""}
+                    onChange={(e) => handleArrayChange("languages", i, "level", e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2"
+                  />
+                  <button type="button" onClick={() => removeArrayItem("languages", i)} className="p-2 rounded-md hover:bg-gray-100">
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => addArrayItem("languages", { name: "", level: "" })} className="inline-flex items-center gap-2 px-3 py-1 border rounded-md">
+                <Plus className="h-4 w-4" /> Añadir idioma
+              </button>
+            </div>
+
+            {/* Educación */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Educación</label>
+              {(formData.education || []).map((edu, i) => (
+                <div key={i} className="mb-2 border p-3 rounded">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeArrayItem("education", i)} className="p-1 rounded hover:bg-gray-100">
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </button>
+                  </div>
+                  <input type="text" placeholder="Institución" value={edu.institution || ""} onChange={(e) => handleArrayChange("education", i, "institution", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <input type="text" placeholder="Título / Carrera" value={edu.degree || ""} onChange={(e) => handleArrayChange("education", i, "degree", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <input type="text" placeholder="Periodo" value={edu.period || ""} onChange={(e) => handleArrayChange("education", i, "period", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <textarea placeholder="Descripción" value={edu.description || ""} onChange={(e) => handleArrayChange("education", i, "description", e.target.value)} className="w-full border px-3 py-2 rounded" />
+                </div>
+              ))}
+              <button type="button" onClick={() => addArrayItem("education", { institution: "", degree: "", period: "", description: "" })} className="inline-flex items-center gap-2 px-3 py-1 border rounded-md">
+                <Plus className="h-4 w-4" /> Añadir educación
+              </button>
+            </div>
+
+            {/* Experiencia */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Experiencia Laboral</label>
+              {(formData.workExperience || []).map((exp, i) => (
+                <div key={i} className="mb-2 border p-3 rounded">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeArrayItem("workExperience", i)} className="p-1 rounded hover:bg-gray-100">
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </button>
+                  </div>
+                  <input type="text" placeholder="Empresa" value={exp.company || ""} onChange={(e) => handleArrayChange("workExperience", i, "company", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <input type="text" placeholder="Puesto" value={exp.position || ""} onChange={(e) => handleArrayChange("workExperience", i, "position", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <input type="text" placeholder="Periodo" value={exp.period || ""} onChange={(e) => handleArrayChange("workExperience", i, "period", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <textarea placeholder="Descripción" value={exp.description || ""} onChange={(e) => handleArrayChange("workExperience", i, "description", e.target.value)} className="w-full border px-3 py-2 rounded" />
+                </div>
+              ))}
+              <button type="button" onClick={() => addArrayItem("workExperience", { company: "", position: "", period: "", description: "" })} className="inline-flex items-center gap-2 px-3 py-1 border rounded-md">
+                <Plus className="h-4 w-4" /> Añadir experiencia
+              </button>
+            </div>
+
+            {/* Proyectos */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Proyectos</label>
+              {(formData.projects || []).map((proj, i) => (
+                <div key={i} className="mb-2 border p-3 rounded">
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => removeArrayItem("projects", i)} className="p-1 rounded hover:bg-gray-100">
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </button>
+                  </div>
+                  <input type="text" placeholder="Nombre del proyecto" value={proj.name || ""} onChange={(e) => handleArrayChange("projects", i, "name", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <textarea placeholder="Descripción" value={proj.description || ""} onChange={(e) => handleArrayChange("projects", i, "description", e.target.value)} className="w-full border px-3 py-2 rounded mb-2" />
+                  <input type="text" placeholder="Link" value={proj.link || ""} onChange={(e) => handleArrayChange("projects", i, "link", e.target.value)} className="w-full border px-3 py-2 rounded" />
+                </div>
+              ))}
+              <button type="button" onClick={() => addArrayItem("projects", { name: "", description: "", link: "" })} className="inline-flex items-center gap-2 px-3 py-1 border rounded-md">
+                <Plus className="h-4 w-4" /> Añadir proyecto
+              </button>
+            </div>
+
+            <div className="flex justify-end">
+              <button type="submit" disabled={loading} className="flex items-center px-6 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? "Guardando..." : "Guardar Cambios"}
               </button>
             </div>
           </form>
-        </div>
-
-        {/* Skills Preview */}
-        {formData.skills.length > 0 && (
-          <div className="mt-8 bg-white shadow-md rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Mis Habilidades</h3>
-            <div className="flex flex-wrap gap-2">
-              {formData.skills.map((skill, index) => (
-                <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
         )}
       </main>
     </div>

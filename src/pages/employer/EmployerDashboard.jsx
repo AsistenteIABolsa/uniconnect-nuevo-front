@@ -29,6 +29,11 @@ const EmployerDashboard = () => {
     totalApplications: 0,
   })
 
+  // Estados para modal y aplicaciones
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [applications, setApplications] = useState([])
+  const [selectedApplicant, setSelectedApplicant] = useState(null)
+
   useEffect(() => {
     fetchDashboardData()
   }, [])
@@ -38,10 +43,13 @@ const EmployerDashboard = () => {
       const response = await jobService.getEmployerJobs()
       setJobs(response.data)
 
-      // Calculate stats
+      // Calcular estadísticas
       const totalJobs = response.data.length
       const activeJobs = response.data.filter((job) => job.status === "active").length
-      const totalApplications = response.data.reduce((sum, job) => sum + job.applicationsCount, 0)
+      const totalApplications = response.data.reduce(
+        (sum, job) => sum + job.applicationsCount,
+        0
+      )
 
       setStats({ totalJobs, activeJobs, totalApplications })
     } catch (error) {
@@ -50,6 +58,52 @@ const EmployerDashboard = () => {
       setLoading(false)
     }
   }
+
+  /*Abrir modal con aplicaciones
+const handleViewApplications = async (jobId) => {
+  try {
+    const response = await jobService.getJobApplications(jobId)
+    setApplications(response.data)
+  } catch (error) {
+    console.error("Error fetching applications:", error)
+    setApplications([]) 
+  } finally {
+    setIsModalOpen(true) // <- asegurar que el modal se abra
+  }
+}*/
+    
+
+  // Abrir modal con aplicaciones (simulación sin API)
+  const handleViewApplications = async (jobId) => {
+    try {
+      // 🔹 Datos de prueba mientras no hay backend
+      const fakeApplicants = [
+        {
+          _id: "1",
+          name: "Nicolás Zorrilla",
+          email: "nicolas@example.com",
+          phone: "3001234567",
+          skills: ["React", "Node.js", "MongoDB"],
+          experience: "2 años de experiencia como desarrollador fullstack",
+        },
+        {
+          _id: "2",
+          name: "Laura Gómez",
+          email: "laura@example.com",
+          phone: "3019876543",
+          skills: ["Python", "Django", "PostgreSQL"],
+          experience: "3 años en backend y data pipelines",
+        },
+      ]
+
+      // En vez de esperar respuesta de la API, usamos datos falsos
+      setApplications(fakeApplicants)
+      setIsModalOpen(true)
+    } catch (error) {
+      console.error("Error mostrando aplicaciones:", error)
+    }
+  }
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -122,16 +176,16 @@ const EmployerDashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">¡Hola, {user?.firstName}! 👋</h1>
-          <p className="mt-2 text-gray-600">Gestiona tus ofertas de empleo y revisa las aplicaciones de candidatos.</p>
+          <p className="mt-2 text-gray-600">
+            Gestiona tus ofertas de empleo y revisa las aplicaciones de candidatos.
+          </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Briefcase className="h-8 w-8 text-blue-600" />
-              </div>
+              <Briefcase className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total de Empleos</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.totalJobs}</p>
@@ -141,9 +195,7 @@ const EmployerDashboard = () => {
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Empleos Activos</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.activeJobs}</p>
@@ -153,9 +205,7 @@ const EmployerDashboard = () => {
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Users className="h-8 w-8 text-purple-600" />
-              </div>
+              <Users className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Total Aplicaciones</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.totalApplications}</p>
@@ -191,12 +241,18 @@ const EmployerDashboard = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(job.status)}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              job.status
+                            )}`}
+                          >
                             {getStatusText(job.status)}
                           </span>
                         </div>
 
-                        <p className="text-gray-600 mb-3 line-clamp-2">{job.description}</p>
+                        <p className="text-gray-600 mb-3 line-clamp-2">
+                          {job.description}
+                        </p>
 
                         <div className="flex items-center text-sm text-gray-500 space-x-4 mb-4">
                           <div className="flex items-center">
@@ -217,7 +273,10 @@ const EmployerDashboard = () => {
                         {job.skills && job.skills.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-4">
                             {job.skills.slice(0, 4).map((skill, index) => (
-                              <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              <span
+                                key={index}
+                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                              >
                                 {skill}
                               </span>
                             ))}
@@ -230,7 +289,10 @@ const EmployerDashboard = () => {
                         )}
 
                         <div className="flex items-center space-x-3">
-                          <button className="flex items-center text-blue-600 hover:text-blue-700 text-sm">
+                          <button
+                            onClick={() => handleViewApplications(job._id)}
+                            className="flex items-center text-blue-600 hover:text-blue-700 text-sm"
+                          >
                             <Eye className="h-4 w-4 mr-1" />
                             Ver aplicaciones ({job.applicationsCount})
                           </button>
@@ -251,9 +313,12 @@ const EmployerDashboard = () => {
             ) : (
               <div className="text-center py-12">
                 <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No tienes ofertas de empleo</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No tienes ofertas de empleo
+                </h3>
                 <p className="text-gray-600 mb-4">
-                  Comienza creando tu primera oferta de empleo para atraer candidatos.
+                  Comienza creando tu primera oferta de empleo para atraer
+                  candidatos.
                 </p>
                 <Link
                   to="/employer/new-job"
@@ -272,18 +337,108 @@ const EmployerDashboard = () => {
           <div className="flex items-center">
             <FileText className="h-6 w-6 text-blue-600" />
             <div className="ml-3">
-              <h3 className="text-lg font-medium text-blue-900">¿Necesitas ayuda?</h3>
+              <h3 className="text-lg font-medium text-blue-900">
+                ¿Necesitas ayuda?
+              </h3>
               <p className="text-blue-700">
-                Consulta nuestras guías para crear ofertas de empleo efectivas y atraer a los mejores candidatos.
+                Consulta nuestras guías para crear ofertas de empleo efectivas y
+                atraer a los mejores candidatos.
               </p>
               <div className="mt-3 space-x-3">
-                <button className="text-blue-600 hover:text-blue-500 text-sm font-medium">Ver guías →</button>
-                <button className="text-blue-600 hover:text-blue-500 text-sm font-medium">Contactar soporte →</button>
+                <button className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                  Ver guías →
+                </button>
+                <button className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                  Contactar soporte →
+                </button>
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 relative">
+            {/* Botón cerrar */}
+            <button
+              onClick={() => {
+                setIsModalOpen(false)
+                setSelectedApplicant(null)
+              }}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+
+            {/* Encabezado dinámico */}
+            {!selectedApplicant ? (
+              // Vista lista de aplicaciones
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Aplicaciones</h2>
+                <button
+                  onClick={() => alert("Aquí iría la lógica de filtrado con IA 🤖")}
+                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                >
+                  Filtrar con IA
+                </button>
+              </div>
+            ) : (
+              // Vista detalles de un aplicante
+              <h2 className="text-xl font-bold mb-4">{selectedApplicant.name}</h2>
+            )}
+
+            {/* Contenido */}
+            {!selectedApplicant ? (
+              // Lista de aplicantes
+              <ul className="space-y-3">
+                {applications.length > 0 ? (
+                  applications.map((applicant) => (
+                    <li
+                      key={applicant._id}
+                      className="p-4 border rounded-lg cursor-pointer hover:bg-gray-50"
+                      onClick={() => setSelectedApplicant(applicant)}
+                    >
+                      <p className="font-medium text-gray-900">{applicant.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {applicant.skills?.join(", ")}
+                      </p>
+                    </li>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No hay aplicaciones para esta oferta.</p>
+                )}
+              </ul>
+            ) : (
+              // Detalles del aplicante
+              <div>
+                <p className="text-gray-700 mb-1">
+                  <strong>Email:</strong> {selectedApplicant.email}
+                </p>
+                <p className="text-gray-700 mb-1">
+                  <strong>Teléfono:</strong> {selectedApplicant.phone}
+                </p>
+                <p className="text-gray-700 mb-1">
+                  <strong>Habilidades:</strong>{" "}
+                  {selectedApplicant.skills?.join(", ")}
+                </p>
+                <p className="text-gray-700 mb-1">
+                  <strong>Experiencia:</strong> {selectedApplicant.experience}
+                </p>
+
+                <button
+                  onClick={() => setSelectedApplicant(null)}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  ← Volver a la lista
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

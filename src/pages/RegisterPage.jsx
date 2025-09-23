@@ -1,4 +1,3 @@
-//src.pages.ResgisterPage.jsx
 "use client"
 
 import { useState } from "react"
@@ -13,18 +12,7 @@ const RegisterPage = () => {
     firstName: "",
     lastName: "",
     phone: "",
-    role: "estudiante",
-    // Campos específicos para estudiantes
-    studentId: "",
-    major: "",
-    graduationYear: "",
-    about: "",
-    skills: [],
-    // Campos específicos para empleadores
-    companyName: "",
-    industry: "",
-    companySize: "",
-    description: "",
+    role: "estudiante", // solo rol, sin campos extra
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -38,17 +26,6 @@ const RegisterPage = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
-
-  const handleSkillsChange = (e) => {
-    const skills = e.target.value
-      .split(",")
-      .map((skill) => skill.trim())
-      .filter((skill) => skill)
-    setFormData((prev) => ({
-      ...prev,
-      skills,
     }))
   }
 
@@ -255,151 +232,6 @@ const RegisterPage = () => {
                 </label>
               </div>
             </div>
-
-            {/* Campos específicos para estudiantes */}
-            {formData.role === "estudiante" && (
-              <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900">Información Académica</h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Matrícula</label>
-                    <input
-                      type="text"
-                      name="studentId"
-                      required
-                      value={formData.studentId}
-                      onChange={handleChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="E12345678"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Año de graduación</label>
-                    <input
-                      type="text"
-                      name="graduationYear"
-                      required
-                      value={formData.graduationYear}
-                      onChange={handleChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="2025"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Carrera</label>
-                  <input
-                    type="text"
-                    name="major"
-                    required
-                    value={formData.major}
-                    onChange={handleChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Ingeniería en Sistemas"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Habilidades (separadas por comas)</label>
-                  <input
-                    type="text"
-                    name="skills"
-                    value={formData.skills.join(", ")}
-                    onChange={handleSkillsChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="JavaScript, React, Node.js, Python"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Acerca de ti</label>
-                  <textarea
-                    name="about"
-                    rows="3"
-                    value={formData.about}
-                    onChange={handleChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Cuéntanos sobre ti, tus intereses y objetivos profesionales..."
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Campos específicos para empleadores */}
-            {formData.role === "empleador" && (
-              <div className="space-y-4 p-4 bg-green-50 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-900">Información de la Empresa</h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Nombre de la empresa</label>
-                  <input
-                    type="text"
-                    name="companyName"
-                    required
-                    value={formData.companyName}
-                    onChange={handleChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="TechCorp Solutions"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Industria</label>
-                    <select
-                      name="industry"
-                      required
-                      value={formData.industry}
-                      onChange={handleChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Selecciona una industria</option>
-                      <option value="tech">Tecnología</option>
-                      <option value="finance">Finanzas</option>
-                      <option value="healthcare">Salud</option>
-                      <option value="education">Educación</option>
-                      <option value="retail">Retail</option>
-                      <option value="manufacturing">Manufactura</option>
-                      <option value="consulting">Consultoría</option>
-                      <option value="other">Otra</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Tamaño de la empresa</label>
-                    <select
-                      name="companySize"
-                      required
-                      value={formData.companySize}
-                      onChange={handleChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Selecciona el tamaño</option>
-                      <option value="startup">Startup (1-10 empleados)</option>
-                      <option value="small">Pequeña (11-50 empleados)</option>
-                      <option value="medium">Mediana (51-200 empleados)</option>
-                      <option value="large">Grande (201-1000 empleados)</option>
-                      <option value="enterprise">Corporativo (1000+ empleados)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Descripción de la empresa</label>
-                  <textarea
-                    name="description"
-                    rows="3"
-                    value={formData.description}
-                    onChange={handleChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Describe tu empresa, su misión y valores..."
-                  />
-                </div>
-              </div>
-            )}
 
             <div>
               <button
