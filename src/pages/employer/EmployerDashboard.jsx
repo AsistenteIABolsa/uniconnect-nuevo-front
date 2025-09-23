@@ -17,6 +17,7 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react"
+import axios from "axios"
 
 const EmployerDashboard = () => {
   const { user, logout } = useAuth()
@@ -72,36 +73,29 @@ const handleViewApplications = async (jobId) => {
 }*/
     
 
-  // Abrir modal con aplicaciones (simulación sin API)
+  // Abrir modal con aplicaciones 
   const handleViewApplications = async (jobId) => {
-    try {
-      // 🔹 Datos de prueba mientras no hay backend
-      const fakeApplicants = [
-        {
-          _id: "1",
-          name: "Nicolás Zorrilla",
-          email: "nicolas@example.com",
-          phone: "3001234567",
-          skills: ["React", "Node.js", "MongoDB"],
-          experience: "2 años de experiencia como desarrollador fullstack",
-        },
-        {
-          _id: "2",
-          name: "Laura Gómez",
-          email: "laura@example.com",
-          phone: "3019876543",
-          skills: ["Python", "Django", "PostgreSQL"],
-          experience: "3 años en backend y data pipelines",
-        },
-      ]
+  try {
+    const res = await axios.get(`http://localhost:5000/api/applications/jobs/${jobId}/applications`)
 
-      // En vez de esperar respuesta de la API, usamos datos falsos
-      setApplications(fakeApplicants)
-      setIsModalOpen(true)
-    } catch (error) {
-      console.error("Error mostrando aplicaciones:", error)
-    }
+    const applicants = res.data.map(app => ({
+      _id: app._id,
+      name: `${app.student.firstName} ${app.student.lastName}`,
+      skills: app.student.skills || [],
+      email: app.student.email,
+      phone: app.student.phone,
+      coverLetter: app.coverLetter,
+      experience: app.student.experience || "No especificada",
+
+    }))
+
+    setApplications(applicants)
+    setIsModalOpen(true)
+  } catch (error) {
+    console.error("Error mostrando aplicaciones:", error)
   }
+}
+
 
 
   const getStatusColor = (status) => {
@@ -418,12 +412,28 @@ const handleViewApplications = async (jobId) => {
                 <p className="text-gray-700 mb-1">
                   <strong>Teléfono:</strong> {selectedApplicant.phone}
                 </p>
-                <p className="text-gray-700 mb-1">
-                  <strong>Habilidades:</strong>{" "}
-                  {selectedApplicant.skills?.join(", ")}
-                </p>
+                <div className="text-gray-700 mb-1">
+                <strong>Habilidades:</strong>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {selectedApplicant.skills && selectedApplicant.skills.length > 0 ? (
+                    selectedApplicant.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 text-sm rounded-full text-white bg-cyan-500 shadow-md"
+                      >
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">No especificadas</span>
+                  )}
+                </div>
+              </div>
                 <p className="text-gray-700 mb-1">
                   <strong>Experiencia:</strong> {selectedApplicant.experience}
+                </p>
+                <p className="text-gray-700 mb-1">
+                  <strong>Comentario:</strong> {selectedApplicant.coverLetter}
                 </p>
 
                 <button
