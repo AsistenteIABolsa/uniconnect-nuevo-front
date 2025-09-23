@@ -135,10 +135,10 @@ const LoginPage = () => {
           <h3 className="text-sm font-medium text-blue-800 mb-2">Usuarios de prueba:</h3>
           <div className="text-xs text-blue-700 space-y-1">
             <p>
-              <strong>Estudiante:</strong> juan.perez@universidad.edu / password
+              <strong>Estudiante:</strong> nico@gmail.com / nico12
             </p>
             <p>
-              <strong>Empleador:</strong> maria.lopez@empresa.com / password
+              <strong>Empleador:</strong> juanjo@gmail.com/ juanjo12
             </p>
             <p>
               <strong>Admin:</strong> admin@universidad.edu / password
