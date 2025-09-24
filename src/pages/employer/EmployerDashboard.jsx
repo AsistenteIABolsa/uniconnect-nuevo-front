@@ -23,6 +23,9 @@ const EmployerDashboard = () => {
   const { user, logout } = useAuth()
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false);
+  const [analisis_ia, setAnalisisIa] = useState(null);
+  const [selectedJobId, setSelectedJobId] = useState(null);
   const [stats, setStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -90,6 +93,7 @@ const handleViewApplications = async (jobId) => {
     }))
 
     setApplications(applicants)
+    setSelectedJobId(jobId)  // 👈 guardamos el jobId
     setIsModalOpen(true)
   } catch (error) {
     console.error("Error mostrando aplicaciones:", error)
@@ -123,6 +127,28 @@ const handleViewApplications = async (jobId) => {
         return status
     }
   }
+
+  // Lógica para análisis con IA
+  const handleAnalyzeApplicants = async (_id) => {
+    setIsLoading(true);
+  try {
+    const res = await fetch(`http://localhost:5000/api/jobs/${_id}/analisis-aplicados`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) throw new Error("Error analizando aplicaciones");
+
+    const data = await res.json();
+    console.log("🔎 Análisis IA:", data);
+    // aquí ya podrías setear el resultado en un estado y mostrarlo en un modal
+    setAnalisisIa(data.analisis_ia);
+    setIsLoading(false);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
 
   if (loading) {
     return (
@@ -367,16 +393,39 @@ const handleViewApplications = async (jobId) => {
 
             {/* Encabezado dinámico */}
             {!selectedApplicant ? (
-              // Vista lista de aplicaciones
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">Aplicaciones</h2>
-                <button
-                  onClick={() => alert("Aquí iría la lógica de filtrado con IA 🤖")}
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-                >
-                  Filtrar con IA
-                </button>
-              </div>
+              <>
+                {/* Encabezado + botón */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Aplicaciones</h2>
+                  <button
+                    onClick={() => handleAnalyzeApplicants(selectedJobId)}
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500
+                    to-purple-600 text-white font-semibold shadow-md hover:opacity-90 transition"
+                  >
+                    Análisis con IA
+                  </button>
+                </div>
+
+                {/* Loader (modal de carga) */}
+                {isLoading && (
+                  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-500 mb-4"></div>
+                      <p className="text-gray-700 font-medium">Analizando candidatos con IA...</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Resultado del análisis */}
+                {analisis_ia && !isLoading && (
+                  <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300 shadow-sm">
+                    <h3 className="text-lg font-semibold text-indigo-600 mb-2">
+                      Resultado del análisis
+                    </h3>
+                    <p className="text-gray-700 whitespace-pre-line">{analisis_ia}</p>
+                  </div>
+                )}
+              </>
             ) : (
               // Vista detalles de un aplicante
               <h2 className="text-xl font-bold mb-4">{selectedApplicant.name}</h2>
