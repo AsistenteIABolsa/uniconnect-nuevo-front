@@ -19,6 +19,9 @@ import {
   Plus
 } from "lucide-react"
 
+import { VapiWidgetEmbed } from "../../components/VapiWidgetEmbed";
+
+
 const StudentProfile = () => {
   const { user, updateProfile } = useAuth()
   const [formData, setFormData] = useState({
@@ -110,6 +113,15 @@ const StudentProfile = () => {
   // Toggle editar / cancelar (si cancela, revertir a user actual)
   const toggleEdit = () => {
     if (isEditing) {
+
+      (
+    <VapiWidgetEmbed
+            assistantId={import.meta.env.VITE_VAPI_ASSISTANT_PERFIL}
+            publicKey={import.meta.env.VITE_VAPI_PUBLIC_KEY}
+            // props extra del widget si existen, ej:
+            // theme="light" position="bottom-right"
+          />
+  )
       // cancelar: revertir datos a user
       if (user) {
         setFormData({

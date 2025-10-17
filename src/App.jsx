@@ -12,6 +12,8 @@ import EmployerDashboard from "./pages/employer/EmployerDashboard"
 import NewJob from "./pages/employer/NewJob"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 
+//import { VapiRouteBinder } from "./VapiRouteBinder"; // ya está en el canvas
+
 function App() {
   return (
     <AuthProvider>
@@ -21,6 +23,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+           
 
             {/* Rutas de estudiante */}
             <Route

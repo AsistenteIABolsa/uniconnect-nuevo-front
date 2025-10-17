@@ -9,84 +9,320 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <!-- Google Fonts (opcional) -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
 
-    <!-- Estilos globales -->
+    <div id="root"></div>
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Vapi Widget Script - Load immediately -->
+    <script src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js" type="text/javascript"></script>
+
+    <!-- Initialize Vapi widget and arrow + event handlers -->
+    <script type="text/javascript">
+      // Function to show the arrow
+      function showWidgetArrow(position) {
+        const arrow = document.getElementById('widget-arrow');
+        if (arrow) {
+          const svg = arrow.querySelector('svg path');
+          
+          // Update arrow position and direction based on widget position
+          if (position === 'bottom') {
+            arrow.style.top = 'auto';
+            arrow.style.bottom = '120px';
+            // Arrow points down (towards bottom widget)
+            if (svg) svg.setAttribute('d', 'M12 4L12 16M12 16L8 12M12 16L16 12');
+          } else {
+            arrow.style.bottom = 'auto';
+            arrow.style.top = '120px';
+            // Arrow points up (towards top widget)
+            if (svg) svg.setAttribute('d', 'M12 20L12 8M12 8L8 12M12 8L16 12');
+          }
+
+          setTimeout(function() {
+            arrow.style.opacity = '1';
+          }, 2000); // Show after 2 seconds
+        }
+      }
+
+      // Function to hide the arrow
+      function hideWidgetArrow() {
+        const arrow = document.getElementById('widget-arrow');
+        if (arrow) {
+          arrow.style.opacity = '0';
+          setTimeout(function() {
+            arrow.style.display = 'none';
+          }, 500);
+        }
+      }
+
+      // Hide arrow when user clicks anywhere (indicating they see the widget)
+      document.addEventListener('click', function(e) {
+        // Only hide if clicking outside the widget area
+        if (!e.target.closest('vapi-widget') && !e.target.closest('.widget-arrow')) {
+          const arrow = document.getElementById('widget-arrow');
+          if (arrow && arrow.style.opacity === '1') {
+            hideWidgetArrow();
+          }
+        }
+      });
+
+      // Also hide when scrolling (user is engaged)
+      let scrollTimeout;
+      window.addEventListener('scroll', function() {
+        const arrow = document.getElementById('widget-arrow');
+        if (arrow && arrow.style.opacity === '1') {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(function() {
+            hideWidgetArrow();
+          }, 1500);
+        }
+      });
+
+      // Desktop toggling between Chat and Voice widgets
+      document.addEventListener('DOMContentLoaded', function() {
+        const chatDesktop = document.querySelector('.widget-desktop');
+        const voiceDesktop = document.querySelector('.widget-desktop-voice');
+
+        // Create slider toggle (desktop) - initially hidden
+        const sliderContainer = document.createElement('div');
+        sliderContainer.id = 'widget-switch';
+        sliderContainer.style.cssText = 'position:fixed; right:20px; top:80px; z-index:998; display:none;';
+        sliderContainer.innerHTML = `
+          <label class="toggle">
+            <input id="toggle-mode" type="checkbox" />
+            <span class="slider">
+              <span class="label-left">EMP</span>
+              <span class="label-right">EST</span>
+            </span>
+          </label>
+        `;
+        document.body.appendChild(sliderContainer);
+
+        // Create slider toggle (mobile) - initially hidden
+        const sliderContainerMobile = document.createElement('div');
+        sliderContainerMobile.id = 'widget-switch-mobile';
+        sliderContainerMobile.style.cssText = 'position:fixed; right:20px; bottom:80px; z-index:998; display:none;';
+        sliderContainerMobile.innerHTML = `
+          <label class="toggle toggle-mobile">
+            <input id="toggle-mode-mobile" type="checkbox" />
+            <span class="slider">
+              <span class="label-left">EMP</span>
+              <span class="label-right">EST</span>
+            </span>
+          </label>
+        `;
+        document.body.appendChild(sliderContainerMobile);
+
+        // Function to handle responsive controls
+        const handleResponsiveControls = () => {
+          const sw = document.getElementById('widget-switch');
+          const swMobile = document.getElementById('widget-switch-mobile');
+          const chatMobile = document.querySelector('.widget-mobile-chat');
+          const voiceMobile = document.querySelector('.widget-mobile-voice');
+          
+          if (window.innerWidth <= 768) {
+            // Hide desktop slider, show mobile slider
+            if (sw) sw.style.display = 'none';
+            if (swMobile) swMobile.style.display = 'flex';
+            
+            // Hide desktop widgets
+            if (chatDesktop) chatDesktop.style.display = 'none';
+            if (voiceDesktop) voiceDesktop.style.display = 'none';
+            
+            // Show mobile chat by default, hide voice
+            if (chatMobile) chatMobile.style.display = 'block';
+            if (voiceMobile) voiceMobile.style.display = 'none';
+            
+            showWidgetArrow('bottom');
+          } else {
+            // Show desktop slider, hide mobile slider
+            if (sw) sw.style.display = 'flex';
+            if (swMobile) swMobile.style.display = 'none';
+            
+            // Desktop por defecto: Chat visible, Voz oculta
+            if (chatDesktop) chatDesktop.style.display = 'block';
+            if (voiceDesktop) voiceDesktop.style.display = 'none';
+            
+            // Hide mobile widgets
+            if (chatMobile) chatMobile.style.display = 'none';
+            if (voiceMobile) voiceMobile.style.display = 'none';
+            
+            showWidgetArrow('top');
+          }
+        };
+        
+        // Call after creating sliders
+        handleResponsiveControls();
+        window.addEventListener('resize', handleResponsiveControls);
+
+        // Desktop slider event listener
+        const toggle = document.getElementById('toggle-mode');
+        if (toggle){
+          toggle.addEventListener('change', (e) => {
+            const toVoice = e.target.checked;
+            if (toVoice){
+              // Mostrar voz (bottom-right), ocultar chat
+              if (chatDesktop) chatDesktop.style.display = 'none';
+              if (voiceDesktop) voiceDesktop.style.display = 'block';
+              showWidgetArrow('top');
+            } else {
+              // Mostrar chat (bottom-right), ocultar voz
+              if (chatDesktop) chatDesktop.style.display = 'block';
+              if (voiceDesktop) voiceDesktop.style.display = 'none';
+              showWidgetArrow('top');
+            }
+          });
+        }
+
+        // Mobile slider event listener
+        const toggleMobile = document.getElementById('toggle-mode-mobile');
+        if (toggleMobile){
+          toggleMobile.addEventListener('change', (e) => {
+            const toVoice = e.target.checked;
+            const chatMobile = document.querySelector('.widget-mobile-chat');
+            const voiceMobile = document.querySelector('.widget-mobile-voice');
+            
+            if (toVoice){
+              // Mostrar voz (bottom-right), ocultar chat
+              if (chatMobile) chatMobile.style.display = 'none';
+              if (voiceMobile) voiceMobile.style.display = 'block';
+              showWidgetArrow('bottom');
+            } else {
+              // Mostrar chat (bottom-right), ocultar voz
+              if (chatMobile) chatMobile.style.display = 'block';
+              if (voiceMobile) voiceMobile.style.display = 'none';
+              showWidgetArrow('bottom');
+            }
+          });
+        }
+
+        // Attach event listeners to all widgets (if present)
+        const attachHandlers = (widget, label) => {
+          if (!widget) return;
+          widget.addEventListener('call-start', () => console.log(label, 'call-start'));
+          widget.addEventListener('call-end',   () => console.log(label, 'call-end'));
+          widget.addEventListener('message',    (e) => console.log(label, 'message:', e.detail));
+          widget.addEventListener('error',      (e) => console.error(label, 'error:', e.detail));
+        };
+        attachHandlers(chatDesktop,  '[DESKTOP-CHAT]');
+        attachHandlers(voiceDesktop, '[DESKTOP-VOICE]');
+        
+        const chatMobile = document.querySelector('.widget-mobile-chat');
+        const voiceMobile = document.querySelector('.widget-mobile-voice');
+        attachHandlers(chatMobile, '[MOBILE-CHAT]');
+        attachHandlers(voiceMobile, '[MOBILE-VOICE]');
+      });
+    </script>
+    
+    <!-- Google Fonts (optional - for better typography) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
       /* Custom scrollbar */
       ::-webkit-scrollbar {
         width: 10px;
       }
+
       ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #14b8a6;
-        border-radius: 5px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #0f766e;
+        background: #FDF2F8;
       }
 
+      ::-webkit-scrollbar-thumb {
+        background: #14B8A6;
+        border-radius: 5px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #1ae4cc;
+      }
+      
       /* Loading animation */
       .loading-spinner {
         display: inline-block;
         width: 40px;
         height: 40px;
-        border: 4px solid rgba(20, 184, 166, 0.3);
+        border: 4px solid rgba(249, 168, 212, 0.3);
         border-radius: 50%;
-        border-top-color: #14b8a6;
+        border-top-color: #14B8A6;
         animation: spin 1s ease-in-out infinite;
       }
+      
       @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
+        to { transform: rotate(360deg); }
       }
-
-      /* Smooth scroll */
+      
+      /* Smooth scroll behavior */
       html {
         scroll-behavior: smooth;
       }
-
-      /* Font family + fondo */
+      
+      /* Font family */
       body {
-        font-family: "Inter", sans-serif;
-        background: linear-gradient(to bottom right, #ffffff, #f8fafc);
-      }
-
-      /* Flecha indicadora */
-      #widget-arrow {
-        position: fixed;
-        right: 20px;
-        width: 40px;
-        height: 40px;
-        background: url("https://cdn-icons-png.flaticon.com/512/545/545682.png")
-          no-repeat center center;
-        background-size: contain;
-        opacity: 0;
-        transition: opacity 0.5s;
-        z-index: 9999;
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(to bottom right, #ffffff, #FDF2F8);
       }
     </style>
   </head>
   <body>
-    <div id="root"></div>
-
-   
-     <!-- Vapi Widget - Desktop (top-right) -->
+    <!-- Vapi Widget - Desktop (bottom-right) -->
     <vapi-widget
-      
-      public-key="d1b861f9-2722-4b68-baef-daa861e318cb"
-      assistant-id="d51d1b88-ede9-4363-a6af-4fa165bd0e3b"
-      mode="hybrid"
+      class="widget-desktop"
+      public-key="10a98924-acd9-4977-8e0c-bb201d35af25"
+      assistant-id="89a0911b-cbe8-421d-ae8a-48b89611822b"
+      mode="chat"
+      theme="light"
+      base-bg-color="#ffffff"
+      accent-color="#D31BE4"
+      cta-button-color="#ffffff"
+      cta-button-text-color="#000000"
+      border-radius="large"
+      size="compact"
+      position="bottom-right"
+      title="HAZ TU PERFIL CON DANNA"
+      start-button-text="Iniciar Chat"
+      end-button-text="Finalizar Chat"
+      chat-first-message="Hola, soy Danna, tu asistente virtual de UNICONNECT para crear tu perfil profesional. ¿Con quién tengo el gusto?"
+      chat-placeholder="Hola Danna, deseo empezar..."
+      voice-show-transcript="false"
+      consent-required="true"
+      consent-title="Términos y Condiciones"
+      consent-content="Al hacer clic en &quot;Aceptar&quot;, y cada vez que interactúo con este agente de IA, consiento la grabación, almacenamiento y compartición de mis comunicaciones con proveedores de servicios de terceros, y como se describe en nuestros Términos de Servicio."
+      consent-storage-key="vapi_widget_consent"
+    >    </vapi-widget>
+
+    <!-- Vapi Widget - Mobile Chat (bottom-right) -->
+    <vapi-widget
+      class="widget-mobile-chat"
+      public-key="10a98924-acd9-4977-8e0c-bb201d35af25"
+      assistant-id="89a0911b-cbe8-421d-ae8a-48b89611822b"
+      mode="chat"
+      theme="light"
+      base-bg-color="#ffffff"
+      accent-color="#D31BE4"
+      cta-button-color="#ffffff"
+      cta-button-text-color="#000000"
+      border-radius="large"
+      size="compact"
+      position="bottom-right"
+      title="DANNA - PERFILES"
+      start-button-text="Iniciar Chat"
+      end-button-text="Finalizar Chat"
+      chat-first-message="Hola, soy Danna, tu asistente virtual de UNICONNECT para crear tu perfil profesional. ¿Con quién tengo el gusto?"
+      chat-placeholder="Hola Danna, deseo empezar..."
+      voice-show-transcript="false"
+      consent-required="true"
+      consent-title="Términos y Condiciones"
+      consent-content="Al hacer clic en &quot;Aceptar&quot;, y cada vez que interactúo con este agente de IA, consiento la grabación, almacenamiento y compartición de mis comunicaciones con proveedores de servicios de terceros, y como se describe en nuestros Términos de Servicio."
+      consent-storage-key="vapi_widget_consent"
+    >    </vapi-widget>
+
+    <!-- Vapi Widget - Mobile Voice (bottom-right) -->
+    <vapi-widget
+      class="widget-mobile-voice"
+      public-key="10a98924-acd9-4977-8e0c-bb201d35af25"
+      assistant-id="653786c3-136e-4cec-950b-0eea3c293a4d"
+      mode="chat"
       theme="light"
       base-bg-color="#ffffff"
       accent-color="#14B8A6"
@@ -95,100 +331,245 @@
       border-radius="large"
       size="compact"
       position="bottom-right"
-      title="AGENDA TU CITA"
-      start-button-text="Iniciar Chat"
-      end-button-text="Finalizar Chat"
-      chat-first-message="¡Hola! Aquí podrás agendar tus citas en Cemdi para Famisanar. ¿En qué puedo ayudarte?"
-      chat-placeholder="Escribe tu consulta para agendar cita..."
-      voice-show-transcript="true"
+      title="DANNA - VACANTES"
+      start-button-text="Iniciar Llamada"
+      end-button-text="Finalizar Llamada"
+      chat-first-message="Hola, soy Danna, tu asistente virtual de UNICONNECT para crear tus vacantes de empleo. ¿Con quién tengo el gusto?"
+      chat-placeholder="Hola Danna, tengo una oferta de empleo..."
+      voice-show-transcript="false"
       consent-required="true"
       consent-title="Términos y Condiciones"
       consent-content="Al hacer clic en &quot;Aceptar&quot;, y cada vez que interactúo con este agente de IA, consiento la grabación, almacenamiento y compartición de mis comunicaciones con proveedores de servicios de terceros, y como se describe en nuestros Términos de Servicio."
       consent-storage-key="vapi_widget_consent"
     >    </vapi-widget>
 
-    <!-- Flechita que apunta al widget -->
-    <div id="widget-arrow"></div>
+    <!-- Animated arrow pointing to widget button -->
+    <div class="widget-arrow" id="widget-arrow" style="
+      position: fixed;
+      bottom: 120px;
+      right: 20px;
+      z-index: 999;
+      animation: bounce-arrow 2s infinite;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    ">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 20L12 8M12 8L8 12M12 8L16 12" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
 
-    <!-- Script del widgettt -->
-    <script
-      src="https://unpkg.com/@vapi-ai/client-sdk-react/dist/embed/widget.umd.js"
-      type="text/javascript"
-    ></script>
 
-    <!-- Inicialización dinámica (posición y flecha) -->
-    <script type="text/javascript">
-      function updateWidgetPosition() {
-        const widget = document.querySelector("vapi-widget");
-        if (widget) {
-          if (window.innerWidth <= 768) {
-            widget.setAttribute("position", "bottom-right");
-            showWidgetArrow("bottom");
-          } else {
-            widget.setAttribute("position", "top-right");
-            showWidgetArrow("top");
-          }
+    <!-- Vapi Widget - Desktop VOICE (bottom-right, alterna con slider) -->
+    <vapi-widget
+      class="widget-desktop-voice"
+      public-key="10a98924-acd9-4977-8e0c-bb201d35af25"
+      assistant-id="653786c3-136e-4cec-950b-0eea3c293a4d"
+      mode="chat"
+      theme="light"
+      base-bg-color="#ffffff"
+      accent-color="#14B8A6"
+      cta-button-color="#ffffff"
+      cta-button-text-color="#000000"
+      border-radius="large"
+      size="compact"
+      position="bottom-right"
+      title="CREA TUS VACANTES CON DANNA"
+      start-button-text="Iniciar Llamada"
+      end-button-text="Finalizar Llamada"
+      chat-first-message="Hola, soy Danna, tu asistente virtual de UNICONNECT para crear tus vacantes de empleo. ¿Con quién tengo el gusto?"
+      chat-placeholder="Hola Danna, tengo una oferta de empleo..."
+      voice-show-transcript="false"
+      consent-required="true"
+      consent-title="Términos y Condiciones"
+      consent-content="Al hacer clic en &quot;Aceptar&quot;, y cada vez que interactúo con este agente de IA, consiento la grabación, almacenamiento y compartición de mis comunicaciones con proveedores de servicios de terceros, y como se describe en nuestros Términos de Servicio."
+      consent-storage-key="vapi_widget_consent"
+    >    </vapi-widget>
+
+    <style>
+      /* Show only one widget por breakpoint; en desktop alterna slider */
+      .widget-desktop{ display:block }
+      .widget-desktop-voice{ display:none }
+      .widget-mobile-chat{ display:none }
+      .widget-mobile-voice{ display:none }
+      @media (max-width: 768px){
+        .widget-desktop{ display:none }
+        .widget-desktop-voice{ display:none }
+        .widget-mobile-chat{ display:block }
+        .widget-mobile-voice{ display:none }
+      }
+      @keyframes bounce-arrow {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0) scale(1);
+        }
+        40% {
+          transform: translateY(-12px) scale(1.1);
+        }
+        60% {
+          transform: translateY(-6px) scale(1.05);
         }
       }
 
-      window.addEventListener("load", function () {
-        if (window.VapiWidget) {
-          updateWidgetPosition();
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
         }
-      });
-
-      setTimeout(function () {
-        if (window.VapiWidget) {
-          updateWidgetPosition();
-        }
-      }, 1000);
-
-      window.addEventListener("resize", updateWidgetPosition);
-      updateWidgetPosition();
-
-      function showWidgetArrow(position) {
-        const arrow = document.getElementById("widget-arrow");
-        if (arrow) {
-          if (position === "bottom") {
-            arrow.style.top = "auto";
-            arrow.style.bottom = "120px";
-          } else {
-            arrow.style.bottom = "auto";
-            arrow.style.top = "120px";
-          }
-          setTimeout(() => (arrow.style.opacity = "1"), 2000);
+        50% {
+          box-shadow: 0 0 20px rgba(20, 184, 166, 0.6);
         }
       }
 
-      function hideWidgetArrow() {
-        const arrow = document.getElementById("widget-arrow");
-        if (arrow) {
-          arrow.style.opacity = "0";
-          setTimeout(() => (arrow.style.display = "none"), 500);
+      .widget-arrow {
+        transition: all 0.3s ease;
+      }
+
+      .widget-arrow:hover {
+        transform: scale(1.1);
+      }
+
+      .widget-arrow svg {
+        filter: drop-shadow(0 2px 8px rgba(249, 168, 212, 0.4));
+        transition: all 0.3s ease;
+      }
+
+      .widget-arrow svg:hover {
+        filter: drop-shadow(0 4px 12px rgba(249, 168, 212, 0.6));
+      }
+
+      /* Widget arrow responsive positioning is now handled by JavaScript */
+
+      /* Add subtle glow effect */
+      .widget-arrow::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        background: radial-gradient(circle, rgba(249, 168, 212, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: pulse-glow 3s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      /* Toggle slider Chat <-> Voz */
+      .toggle {
+        position: relative;
+        display: inline-block;
+        width: 112px;
+        height: 44px;
+      }
+      .toggle input { display: none; }
+      .toggle .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: #e5e7eb; /* slate-200 */
+        border-radius: 9999px;
+        border: 1px solid #cbd5e1; /* slate-300 */
+        transition: background .25s ease;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 12px;
+        font-family: Inter, system-ui, sans-serif;
+        font-size: 12px; font-weight: 600; color: #0f172a; /* slate-900 */
+      }
+      .toggle .slider::before {
+        content: '';
+        position: absolute;
+        height: 40px; width: 40px;
+        left: 2px; top: 2px;
+        background: #ffffff;
+        border-radius: 9999px;
+        box-shadow: 0 2px 6px rgba(15,23,42,.15);
+        transition: transform .25s ease;
+      }
+      .toggle .label-left { color: #14B8A6; } /* Chat color */
+      .toggle .label-right { color: #D31BE4; opacity: .7; } /* Voz off */
+      .toggle input:checked + .slider {
+        background: #14B8A6; /* primary when voice on */
+        color: #ffffff;
+      }
+      .toggle input:checked + .slider::before { transform: translateX(68px); }
+      .toggle input:checked + .slider .label-left { color: #e2e8f0; opacity: .85; }
+      .toggle input:checked + .slider .label-right { color: #ffffff; opacity: 1; }
+
+      /* Mobile slider - smaller size */
+      .toggle-mobile {
+        width: 90px !important;
+        height: 36px !important;
+      }
+      .toggle-mobile .slider {
+        font-size: 11px !important;
+        padding: 0 10px !important;
+      }
+      .toggle-mobile .slider::before {
+        height: 32px !important;
+        width: 32px !important;
+        left: 2px !important;
+        top: 2px !important;
+      }
+      .toggle-mobile input:checked + .slider::before {
+        transform: translateX(54px) !important;
+      }
+
+      /* WhatsApp floating button */
+      .whatsapp-float {
+        position: fixed;
+        bottom: 30px;
+        left: 30px;
+        width: 60px;
+        height: 60px;
+        background: #25D366;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+        transition: all 0.3s ease;
+        color: white;
+        text-decoration: none;
+        animation: whatsapp-pulse 3s infinite;
+      }
+
+      .whatsapp-float:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+        background: #22c55e;
+      }
+
+      .whatsapp-float:active {
+        transform: scale(0.95);
+      }
+
+      @keyframes whatsapp-pulse {
+        0%, 100% {
+          box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+        }
+        50% {
+          box-shadow: 0 4px 20px rgba(37, 211, 102, 0.7);
         }
       }
 
-      document.addEventListener("click", function (e) {
-        if (
-          !e.target.closest("vapi-widget") &&
-          !e.target.closest(".widget-arrow")
-        ) {
-          const arrow = document.getElementById("widget-arrow");
-          if (arrow && arrow.style.opacity === "1") {
-            hideWidgetArrow();
-          }
+      /* Responsive adjustments for WhatsApp button */
+      @media (max-width: 768px) {
+        .whatsapp-float {
+          width: 56px;
+          height: 56px;
+          bottom: 25px;
+          left: 25px;
         }
-      });
+        
+        .whatsapp-float svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+    </style>
 
-      let scrollTimeout;
-      window.addEventListener("scroll", function () {
-        const arrow = document.getElementById("widget-arrow");
-        if (arrow && arrow.style.opacity === "1") {
-          clearTimeout(scrollTimeout);
-          scrollTimeout = setTimeout(hideWidgetArrow, 1500);
-        }
-      });
-    </script>
+    <div id="root">
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
