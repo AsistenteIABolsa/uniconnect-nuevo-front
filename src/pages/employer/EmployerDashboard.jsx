@@ -17,6 +17,7 @@ import {
   FileText,
   Clock,
   CheckCircle,
+  User,
 } from "lucide-react"
 import axios from "axios"
 
@@ -63,34 +64,22 @@ const EmployerDashboard = () => {
     }
   }
 
-  /*Abrir modal con aplicaciones
-const handleViewApplications = async (jobId) => {
-  try {
-    const response = await jobService.getJobApplications(jobId)
-    setApplications(response.data)
-  } catch (error) {
-    console.error("Error fetching applications:", error)
-    setApplications([]) 
-  } finally {
-    setIsModalOpen(true) // <- asegurar que el modal se abra
-  }
-}*/
-    
-
   // Abrir modal con aplicaciones 
   const handleViewApplications = async (jobId) => {
-  try {
-    const res = await axios.get(`http://localhost:5000/api/applications/jobs/${jobId}/applications`)
+    try {
+      const res = await axios.get(`http://localhost:5000/api/applications/jobs/${jobId}/applications`)
 
-    const applicants = res.data.map(app => ({
-      _id: app._id,
-      name: `${app.student.firstName} ${app.student.lastName}`,
-      skills: app.student.skills || [],
-      email: app.student.email,
-      phone: app.student.phone,
-      coverLetter: app.coverLetter,
-      experience: app.student.experience || "No especificada",
+      const applicants = res.data.map(app => ({
+        _id: app._id,
+        name: `${app.student.firstName} ${app.student.lastName}`,
+        skills: app.student.skills || [],
+        email: app.student.email,
+        phone: app.student.phone,
+        coverLetter: app.coverLetter,
+        experience: app.student.experience || "No especificada",
+      }))
 
+<<<<<<< HEAD
     }))
 
     setApplications(applicants)
@@ -98,10 +87,14 @@ const handleViewApplications = async (jobId) => {
     setIsModalOpen(true)
   } catch (error) {
     console.error("Error mostrando aplicaciones:", error)
+=======
+      setApplications(applicants)
+      setIsModalOpen(true)
+    } catch (error) {
+      console.error("Error mostrando aplicaciones:", error)
+    }
+>>>>>>> efd8a5d6061ecc64613e089f57720a90a4c8c05f
   }
-}
-
-
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -168,11 +161,20 @@ const handleViewApplications = async (jobId) => {
             <div className="flex items-center">
               <Building2 className="h-8 w-8 text-blue-600" />
               <span className="ml-2 text-xl font-bold text-gray-900">
-                {user?.profile?.companyName || "Panel Empleador"}
+                {user?.companyName || user?.profile?.companyName || "Panel Empleador"}
               </span>
             </div>
 
             <nav className="flex items-center space-x-4">
+              {/* ENLACE AL PERFIL EMPRESA - AGREGADO */}
+              <Link
+                to="/employer/profile"
+                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
+              >
+                <User className="h-4 w-4 mr-1" />
+                Perfil Empresa
+              </Link>
+              
               <Link
                 to="/employer/new-job"
                 className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 flex items-center"
@@ -231,6 +233,28 @@ const handleViewApplications = async (jobId) => {
                 <p className="text-2xl font-bold text-gray-900">{stats.totalApplications}</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Tarjeta de Perfil Empresarial - AGREGADA */}
+        <div className="mb-8 bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Building2 className="h-8 w-8 text-blue-600 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Perfil Empresarial</h3>
+                <p className="text-gray-600">
+                  Completa tu perfil empresarial para destacar tu empresa y atraer mejor talento.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/employer/profile"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Gestionar Perfil
+            </Link>
           </div>
         </div>
 
@@ -463,22 +487,22 @@ const handleViewApplications = async (jobId) => {
                   <strong>Teléfono:</strong> {selectedApplicant.phone}
                 </p>
                 <div className="text-gray-700 mb-1">
-                <strong>Habilidades:</strong>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {selectedApplicant.skills && selectedApplicant.skills.length > 0 ? (
-                    selectedApplicant.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 text-sm rounded-full text-white bg-cyan-500 shadow-md"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-gray-500">No especificadas</span>
-                  )}
+                  <strong>Habilidades:</strong>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedApplicant.skills && selectedApplicant.skills.length > 0 ? (
+                      selectedApplicant.skills.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 text-sm rounded-full text-white bg-cyan-500 shadow-md"
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-gray-500">No especificadas</span>
+                    )}
+                  </div>
                 </div>
-              </div>
                 <p className="text-gray-700 mb-1">
                   <strong>Experiencia:</strong> {selectedApplicant.experience}
                 </p>
@@ -497,7 +521,6 @@ const handleViewApplications = async (jobId) => {
           </div>
         </div>
       )}
-
     </div>
   )
 }

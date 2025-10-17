@@ -9,6 +9,7 @@ import StudentProfile from "./pages/student/StudentProfile"
 import StudentJobs from "./pages/student/StudentJobs"
 import JobDetail from "./pages/student/JobDetail"
 import EmployerDashboard from "./pages/employer/EmployerDashboard"
+import CompanyProfile from "./pages/employer/CompanyProfile" // NUEVA IMPORTACIÓN
 import NewJob from "./pages/employer/NewJob"
 import AdminDashboard from "./pages/admin/AdminDashboard"
 
@@ -65,6 +66,15 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["empleador"]}>
                   <EmployerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            {/* NUEVA RUTA PARA PERFIL EMPRESA */}
+            <Route
+              path="/employer/profile"
+              element={
+                <ProtectedRoute allowedRoles={["empleador"]}>
+                  <CompanyProfile />
                 </ProtectedRoute>
               }
             />
