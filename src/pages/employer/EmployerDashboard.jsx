@@ -79,21 +79,12 @@ const EmployerDashboard = () => {
         experience: app.student.experience || "No especificada",
       }))
 
-<<<<<<< HEAD
-    }))
-
-    setApplications(applicants)
-    setSelectedJobId(jobId)  // 👈 guardamos el jobId
-    setIsModalOpen(true)
-  } catch (error) {
-    console.error("Error mostrando aplicaciones:", error)
-=======
       setApplications(applicants)
+      setSelectedJobId(jobId)  // 👈 guardamos el jobId
       setIsModalOpen(true)
     } catch (error) {
       console.error("Error mostrando aplicaciones:", error)
     }
->>>>>>> efd8a5d6061ecc64613e089f57720a90a4c8c05f
   }
 
   const getStatusColor = (status) => {
