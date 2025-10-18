@@ -28,8 +28,9 @@ export const jobService = {
   getById: (id) => api.get(`/jobs/${id}`),
   create: (jobData) => api.post("/jobs", jobData),
   getEmployerJobs: () => api.get("/jobs/employer"),
+  update: (id, jobData) => api.put(`/jobs/${id}`, jobData), // NUEVO
+  delete: (id) => api.delete(`/jobs/${id}`), // NUEVO
 }
-
 // Servicios de aplicaciones
 export const applicationService = {
   apply: (applicationData) => api.post("/applications", applicationData),

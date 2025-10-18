@@ -1,4 +1,3 @@
-//src.pages.student.JobDetail.jsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -16,6 +15,18 @@ import {
   AlertCircle,
   Send,
   GraduationCap,
+  Eye,
+  ExternalLink,
+  Target,
+  Award,
+  Globe,
+  Mail,
+  Phone,
+  Linkedin,
+  Twitter,
+  Facebook,
+  Instagram,
+  Github,
 } from "lucide-react"
 
 const JobDetail = () => {
@@ -28,6 +39,7 @@ const JobDetail = () => {
   const [showApplicationForm, setShowApplicationForm] = useState(false)
   const [coverLetter, setCoverLetter] = useState("")
   const [message, setMessage] = useState({ type: "", text: "" })
+  const [showCompanyProfile, setShowCompanyProfile] = useState(false)
 
   useEffect(() => {
     fetchJob()
@@ -344,16 +356,322 @@ const JobDetail = () => {
 
             {/* Company Info */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Sobre la empresa</h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Sobre la empresa</h3>
+                <button
+                  onClick={() => setShowCompanyProfile(true)}
+                  className="flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Ver perfil completo
+                </button>
+              </div>
               <div className="flex items-center mb-3">
                 <Building2 className="h-5 w-5 text-gray-400 mr-2" />
                 <span className="font-medium text-gray-900">{job.companyName}</span>
               </div>
-              {job.companyDescription && <p className="text-gray-700 text-sm">{job.companyDescription}</p>}
+              {job.companyDescription && (
+                <p className="text-gray-700 text-sm mb-3 line-clamp-3">{job.companyDescription}</p>
+              )}
+              <div className="text-xs text-gray-500">
+                Haz clic en "Ver perfil completo" para conocer más sobre esta empresa
+              </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Modal de Perfil de Empresa */}
+{showCompanyProfile && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Perfil de {job.companyName}</h2>
+          <button
+            onClick={() => setShowCompanyProfile(false)}
+            className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Contenido del perfil de la empresa */}
+        <div className="space-y-6">
+          {/* Información Básica */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <Building2 className="h-5 w-5 mr-2" />
+              Información Básica
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <strong className="text-gray-700">Nombre de la Empresa:</strong>
+                <p className="text-gray-900">{job.companyName}</p>
+              </div>
+              <div>
+                <strong className="text-gray-700">Industria:</strong>
+                <p className="text-gray-900">{job.employer?.industry || "No especificada"}</p>
+              </div>
+              <div>
+                <strong className="text-gray-700">Tamaño:</strong>
+                <p className="text-gray-900">{job.employer?.companySize || "No especificado"}</p>
+              </div>
+              <div>
+                <strong className="text-gray-700">Ubicación:</strong>
+                <p className="text-gray-900">{job.location}</p>
+              </div>
+            </div>
+
+            {job.companyDescription && (
+              <div className="mt-4">
+                <strong className="text-gray-700">Descripción:</strong>
+                <p className="text-gray-600 mt-1">{job.companyDescription}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Misión y Visión */}
+          {(job.employer?.mision || job.employer?.vision) && (
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <Target className="h-5 w-5 mr-2" />
+                Misión y Visión
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {job.employer?.mision && (
+                  <div>
+                    <strong className="text-gray-700">Misión:</strong>
+                    <p className="text-gray-600 mt-1">{job.employer.mision}</p>
+                  </div>
+                )}
+                {job.employer?.vision && (
+                  <div>
+                    <strong className="text-gray-700">Visión:</strong>
+                    <p className="text-gray-600 mt-1">{job.employer.vision}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Perfil Empresarial */}
+          {(job.employer?.companyProfile?.founded || 
+            job.employer?.companyProfile?.headquarters || 
+            job.employer?.companyProfile?.culture ||
+            job.employer?.companyProfile?.specialties?.length > 0 || 
+            job.employer?.companyProfile?.values?.length > 0) && (
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <Award className="h-5 w-5 mr-2" />
+                Perfil Empresarial
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {job.employer?.companyProfile?.founded && (
+                  <div>
+                    <strong className="text-gray-700">Año de Fundación:</strong>
+                    <p className="text-gray-900">{job.employer.companyProfile.founded}</p>
+                  </div>
+                )}
+                {job.employer?.companyProfile?.headquarters && (
+                  <div>
+                    <strong className="text-gray-700">Sede Principal:</strong>
+                    <p className="text-gray-900">{job.employer.companyProfile.headquarters}</p>
+                  </div>
+                )}
+              </div>
+
+              {job.employer?.companyProfile?.culture && (
+                <div className="mt-4">
+                  <strong className="text-gray-700">Cultura Organizacional:</strong>
+                  <p className="text-gray-600 mt-1">{job.employer.companyProfile.culture}</p>
+                </div>
+              )}
+
+              {/* Especialidades */}
+              {job.employer?.companyProfile?.specialties?.length > 0 && (
+                <div className="mt-4">
+                  <strong className="text-gray-700">Especialidades:</strong>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {job.employer.companyProfile.specialties.map((specialty, index) => (
+                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                        {specialty}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Valores */}
+              {job.employer?.companyProfile?.values?.length > 0 && (
+                <div className="mt-4">
+                  <strong className="text-gray-700">Valores Corporativos:</strong>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {job.employer.companyProfile.values.map((value, index) => (
+                      <span key={index} className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                        {value}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Redes Sociales */}
+          {job.employer?.socialMedia && Object.values(job.employer.socialMedia).some(url => url) && (
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <Globe className="h-5 w-5 mr-2" />
+                Redes Sociales
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(job.employer.socialMedia).map(([platform, url]) => {
+                  if (!url) return null
+                  
+                  const getSocialIcon = (platform) => {
+                    const icons = {
+                      website: Globe,
+                      linkedin: Linkedin,
+                      twitter: Twitter,
+                      facebook: Facebook,
+                      instagram: Instagram,
+                      github: Github,
+                    }
+                    return icons[platform] || Globe
+                  }
+                  
+                  const IconComponent = getSocialIcon(platform)
+                  const platformNames = {
+                    website: "Sitio Web",
+                    linkedin: "LinkedIn",
+                    twitter: "Twitter",
+                    facebook: "Facebook",
+                    instagram: "Instagram",
+                    github: "GitHub",
+                  }
+                  
+                  return (
+                    <div key={platform} className="flex items-center">
+                      <IconComponent className="h-4 w-4 mr-2 text-gray-600" />
+                      <a 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {platformNames[platform] || platform.charAt(0).toUpperCase() + platform.slice(1)}
+                      </a>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Proyectos Destacados */}
+          {job.employer?.companyProjects?.length > 0 && (
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <Eye className="h-5 w-5 mr-2" />
+                Proyectos Destacados
+              </h3>
+
+              <div className="space-y-4">
+                {job.employer.companyProjects.map((project, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-2">{project.title}</h4>
+                    
+                    {project.description && (
+                      <p className="text-gray-600 mb-3">{project.description}</p>
+                    )}
+                    
+                    {project.technologies?.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {project.technologies.map((tech, techIndex) => (
+                          <span key={techIndex} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>
+                        {project.startDate} {project.endDate ? `- ${project.endDate}` : project.status === "En progreso" ? "- Presente" : ""}
+                      </span>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        project.status === "Completado" ? "bg-green-100 text-green-800" :
+                        project.status === "En progreso" ? "bg-yellow-100 text-yellow-800" :
+                        "bg-blue-100 text-blue-800"
+                      }`}>
+                        {project.status}
+                      </span>
+                    </div>
+                    
+                    {project.link && (
+                      <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center text-blue-600 hover:text-blue-700 text-sm mt-2"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Ver proyecto
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Contacto */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <Mail className="h-5 w-5 mr-2" />
+              Información de Contacto
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                <span><strong>Email:</strong> {job.employer?.email || "No disponible"}</span>
+              </div>
+              <div className="flex items-center">
+                <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                <span><strong>Teléfono:</strong> {job.employer?.contactPhone || job.employer?.phone || "No disponible"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Nota */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-blue-700 text-sm">
+              💼 Esta empresa ha publicado esta vacante a través de Unicontet. 
+              Para más información o contactar directamente, utiliza la información de contacto proporcionada.
+            </p>
+          </div>
+        </div>
+
+        {/* Botón para cerrar */}
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={() => setShowCompanyProfile(false)}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   )
 }
