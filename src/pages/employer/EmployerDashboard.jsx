@@ -80,7 +80,7 @@ const EmployerDashboard = () => {
       }))
 
       setApplications(applicants)
-      setSelectedJobId(jobId)  // 👈 guardamos el jobId
+      setSelectedJobId(jobId)  // 👈 guardamos el jobId si
       setIsModalOpen(true)
     } catch (error) {
       console.error("Error mostrando aplicaciones:", error)
