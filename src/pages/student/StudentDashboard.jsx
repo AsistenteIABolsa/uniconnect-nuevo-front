@@ -79,7 +79,7 @@ const StudentDashboard = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Universidad Jobs</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">Uniconnect</span>
             </div>
 
             <nav className="flex items-center space-x-4">

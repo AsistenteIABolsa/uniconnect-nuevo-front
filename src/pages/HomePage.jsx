@@ -163,13 +163,18 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3 mt-12">
             <div className="flex flex-col items-center space-y-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-black text-2xl font-bold">1</div>
-              <h3 className="text-xl font-bold">Crea tu perfil</h3>
-              <p className="text-center text-text-light">Estudiantes y empresas crean perfiles detallados con información relevante.</p>
+              <h3 className="text-xl font-bold">Registra tu correo y Rol</h3>
+              <p className="text-center text-text-light">Aspirantes y Empleadores registran su correo en nuestra plataforma.</p>
+            </div>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-black text-2xl font-bold">2</div>
+              <h3 className="text-xl font-bold">Perfílate o Crea tu vacante con Danna</h3>
+              <p className="text-center text-text-light">Aspirantes y Empleadores utilizan Danna para crear perfiles y vacantes atractivas.</p>
             </div>
             <div className="flex flex-col items-center space-y-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-black text-2xl font-bold">2</div>
               <h3 className="text-xl font-bold">Conecta</h3>
-              <p className="text-center text-text-light">Empresas publican vacantes y estudiantes aplican a las que mejor se ajusten.</p>
+              <p className="text-center text-text-light">Empresas publican vacantes y aspirantes aplican a las que mejor se ajusten.</p>
             </div>
             <div className="flex flex-col items-center space-y-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-black text-2xl font-bold">3</div>
