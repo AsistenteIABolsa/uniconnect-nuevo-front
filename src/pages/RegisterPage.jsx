@@ -160,24 +160,10 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-              <div className="mt-1 relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Tu número de teléfono"
-                />
-              </div>
-            </div>
 
             {/* Tipo de usuario */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de usuario</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de perfil</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="relative">
                   <input

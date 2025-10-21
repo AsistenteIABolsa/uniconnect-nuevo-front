@@ -11,6 +11,7 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    role: ""
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -30,10 +31,10 @@ const LoginPage = () => {
     setLoading(true)
     setError("")
 
-    const result = await login(formData.email, formData.password)
+    const result = await login(formData.email, formData.password, formData.role)
 
     if (result.success) {
-      navigate("/")
+      navigate(`/${formData.role}`)
     } else {
       setError(result.message)
     }

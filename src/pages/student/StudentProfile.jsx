@@ -58,7 +58,8 @@ const StudentProfile = () => {
         email: user.email || "",
         phone: user.phone || "",
         studentId: user.studentId || "",
-        major: user.major || "",
+        //major: user.major || "",
+        carrera: user.carrera || "",
         graduationYear: user.graduationYear || "",
         about: user.about || "",
         skills: Array.isArray(user.skills) ? user.skills : (user.skills ? String(user.skills).split(",").map(s=>s.trim()).filter(Boolean) : []),
@@ -276,9 +277,10 @@ const StudentProfile = () => {
                 <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600">
                   {formData.firstName?.[0] || ""}{formData.lastName?.[0] || ""}
                 </div>
+                
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-gray-900">{formData.firstName} {formData.lastName}</h3>
-                  <p className="text-gray-600">{formData.major}</p>
+                  <p className="text-gray-600">{formData.carrera}</p>
                   {formData.about && (
                     <p className="text-gray-500 mt-2">{formData.about}</p>
                   )}
@@ -294,14 +296,8 @@ const StudentProfile = () => {
                   <Phone className="h-4 w-4 text-gray-400 mr-2" />
                   <span><strong>Teléfono:</strong> {formData.phone || "No especificado"}</span>
                 </div>
-                <div className="flex items-center">
-                  <GraduationCap className="h-4 w-4 text-gray-400 mr-2" />
-                  <span><strong>Matrícula:</strong> {formData.studentId || "No especificada"}</span>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                  <span><strong>Año de Graduación:</strong> {formData.graduationYear || "No especificado"}</span>
-                </div>
+                
+                
               </div>
             </div>
 
@@ -517,33 +513,18 @@ const StudentProfile = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Matrícula *
-                  </label>
-                  <div className="relative">
-                    <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      name="studentId"
-                      required
-                      value={formData.studentId}
-                      onChange={handleChange}
-                      className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
+                
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Año de Graduación *
+                    Año de Graduación (si aplica)
                   </label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <input
                       type="text"
                       name="graduationYear"
-                      required
+                      
                       value={formData.graduationYear}
                       onChange={handleChange}
                       className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
