@@ -12,6 +12,8 @@ import EmployerDashboard from "./pages/employer/EmployerDashboard"
 import CompanyProfile from "./pages/employer/CompanyProfile" // NUEVA IMPORTACIÓN
 import NewJob from "./pages/employer/NewJob"
 import AdminDashboard from "./pages/admin/AdminDashboard"
+import ForgotPasswordPage from "./pages/ForgotPasswordPage"
+import VerifyEmailPage from "./pages/VerifyEmailPage"
 
 //import { VapiRouteBinder } from "./VapiRouteBinder"; // ya está en el canvas
 
@@ -96,6 +98,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+<           Route path="/verify-email" element={<VerifyEmailPage />} />
           </Routes>
         </div>
       </Router>

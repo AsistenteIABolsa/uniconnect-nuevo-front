@@ -1,11 +1,23 @@
-//src.pages.student.StudentDashboard.jsx
+// src/pages/student/StudentDashboard.jsx
 "use client"
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { jobService, applicationService } from "../../services/api"
-import { User, Briefcase, FileText, Search, MapPin, Clock, LogOut, GraduationCap } from "lucide-react"
+import { 
+  User, 
+  Briefcase, 
+  FileText, 
+  Search, 
+  MapPin, 
+  Clock, 
+  LogOut, 
+  GraduationCap,
+  XCircle,
+  CheckCircle,
+  Eye
+} from "lucide-react"
 
 const StudentDashboard = () => {
   const { user, logout } = useAuth()
@@ -24,6 +36,8 @@ const StudentDashboard = () => {
         applicationService.getStudentApplications(),
       ])
 
+      console.log("Aplicaciones recibidas:", applicationsResponse.data) // Para debug
+
       setRecentJobs(jobsResponse.data.slice(0, 5))
       setApplications(applicationsResponse.data.slice(0, 5))
     } catch (error) {
@@ -33,8 +47,14 @@ const StudentDashboard = () => {
     }
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
+  const getStatusColor = (applicationStatus, jobStatus) => {
+    // Si el trabajo está inactivo o cerrado, mostrar como "Cerrada"
+    if (jobStatus === "inactive" || jobStatus === "closed") {
+      return "bg-gray-100 text-gray-800"
+    }
+    
+    // Si el trabajo está activo, usar el estado normal de la aplicación
+    switch (applicationStatus) {
       case "pending":
         return "bg-yellow-100 text-yellow-800"
       case "reviewed":
@@ -48,8 +68,14 @@ const StudentDashboard = () => {
     }
   }
 
-  const getStatusText = (status) => {
-    switch (status) {
+  const getStatusText = (applicationStatus, jobStatus) => {
+    // Si el trabajo está inactivo o cerrado, mostrar "Cerrada"
+    if (jobStatus === "inactive" || jobStatus === "closed") {
+      return "Cerrada"
+    }
+    
+    // Si el trabajo está activo, usar el estado normal de la aplicación
+    switch (applicationStatus) {
       case "pending":
         return "Pendiente"
       case "reviewed":
@@ -59,7 +85,28 @@ const StudentDashboard = () => {
       case "rejected":
         return "Rechazada"
       default:
-        return status
+        return applicationStatus
+    }
+  }
+
+  const getStatusIcon = (applicationStatus, jobStatus) => {
+    // Si el trabajo está inactivo o cerrado, mostrar icono de cerrado
+    if (jobStatus === "inactive" || jobStatus === "closed") {
+      return <XCircle className="h-4 w-4 mr-1" />
+    }
+    
+    // Si el trabajo está activo, usar iconos normales
+    switch (applicationStatus) {
+      case "pending":
+        return <Clock className="h-4 w-4 mr-1" />
+      case "reviewed":
+        return <Eye className="h-4 w-4 mr-1" />
+      case "accepted":
+        return <CheckCircle className="h-4 w-4 mr-1" />
+      case "rejected":
+        return <XCircle className="h-4 w-4 mr-1" />
+      default:
+        return <Clock className="h-4 w-4 mr-1" />
     }
   }
 
@@ -224,19 +271,34 @@ const StudentDashboard = () => {
                     <div key={application._id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="text-lg font-medium text-gray-900 mb-1">{application.job.title}</h3>
+                          <h3 className="text-lg font-medium text-gray-900 mb-1">
+                            {application.job?.title || "Trabajo no disponible"}
+                          </h3>
                           <p className="text-sm text-gray-600 mb-2">{application.companyName}</p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center text-sm text-gray-500">
                               <Clock className="h-4 w-4 mr-1" />
                               Aplicado el {application.appliedAt}
                             </div>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}
-                            >
-                              {getStatusText(application.status)}
-                            </span>
+                            <div className="flex items-center">
+                              {getStatusIcon(application.status, application.job?.status)}
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                  application.status, 
+                                  application.job?.status
+                                )}`}
+                              >
+                                {getStatusText(application.status, application.job?.status)}
+                              </span>
+                            </div>
                           </div>
+                          
+                          {/* Información adicional si la vacante está cerrada */}
+                          {(application.job?.status === "inactive" || application.job?.status === "closed") && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              Esta vacante ya no está disponible para aplicaciones
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

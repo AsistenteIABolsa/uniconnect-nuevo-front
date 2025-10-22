@@ -35,6 +35,7 @@ const StudentProfile = () => {
     phone: "",
     studentId: "",
     major: "",
+    experience: "",
     graduationYear: "",
     about: "",
     skills: [],
@@ -58,10 +59,11 @@ const StudentProfile = () => {
         email: user.email || "",
         phone: user.phone || "",
         studentId: user.studentId || "",
-        //major: user.major || "",
+        major: user.major || "",
         carrera: user.carrera || "",
         graduationYear: user.graduationYear || "",
         about: user.about || "",
+        experience: user.experience || "",
         skills: Array.isArray(user.skills) ? user.skills : (user.skills ? String(user.skills).split(",").map(s=>s.trim()).filter(Boolean) : []),
         education: Array.isArray(user.education) ? user.education.map(edu => ({
           institution: edu.institution || "",
@@ -168,6 +170,7 @@ const StudentProfile = () => {
           major: user.major || "",
           graduationYear: user.graduationYear || "",
           about: user.about || "",
+          experience: user.experience || "",
           skills: Array.isArray(user.skills) ? user.skills : (user.skills ? String(user.skills).split(",").map(s=>s.trim()).filter(Boolean) : []),
           education: Array.isArray(user.education) ? user.education.map(edu => ({
             institution: edu.institution || "",
@@ -295,11 +298,15 @@ const StudentProfile = () => {
                 <div className="flex items-center">
                   <Phone className="h-4 w-4 text-gray-400 mr-2" />
                   <span><strong>Teléfono:</strong> {formData.phone || "No especificado"}</span>
-                </div>
-                
-                
+                </div> 
+              <div className="flex items-center">
+                 <Briefcase className="h-4 w-4 text-gray-400 mr-2" />
+                 <span><strong>Experiencia:</strong> {formData.experience || "No especificada"}</span>
+               </div>
+
               </div>
-            </div>
+            </div> 
+            
 
             {/* Habilidades */}
             {formData.skills?.length > 0 && (
@@ -512,7 +519,27 @@ const StudentProfile = () => {
                     />
                   </div>
                 </div>
-
+ <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Experiencia
+    </label>
+    <div className="relative">
+      <Briefcase className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+      <select
+        name="experience"
+        value={formData.experience}
+        onChange={handleChange}
+        className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      >
+        <option value="">Seleccionar nivel de experiencia</option>
+        <option value="Sin experiencia">Sin experiencia</option>
+        <option value="0-1 años">0-1 años</option>
+        <option value="1-3 años">1-3 años</option>
+        <option value="3-5 años">3-5 años</option>
+        <option value="5+ años">5+ años</option>
+      </select>
+    </div>
+  </div>
                 
 
                 <div>

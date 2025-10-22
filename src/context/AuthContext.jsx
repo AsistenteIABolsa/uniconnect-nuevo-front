@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      setLoading(true) // ← Agrega esto para mejor UX
       const response = await api.post("/auth/login", { email, password })
       const { token, user } = response.data
 
@@ -48,14 +49,30 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`
       setUser(user)
 
-      return { success: true }
+      return { 
+        success: true,
+        role: user.role // ← El rol viene del backend
+      }
     } catch (error) {
+      const errorMessage = error.response?.data?.message || "Error al iniciar sesión"
+      
+      // Mensajes más específicos para el usuario
+      let userMessage = errorMessage
+      if (error.response?.status === 401) {
+        userMessage = "Email o contraseña incorrectos"
+      } else if (error.response?.status === 500) {
+        userMessage = "Error del servidor. Intenta más tarde."
+      }
+
       return {
         success: false,
-        message: error.response?.data?.message || "Error al iniciar sesión",
+        message: userMessage,
       }
+    } finally {
+      setLoading(false)
     }
   }
+
 
   const register = async (userData) => {
     try {
